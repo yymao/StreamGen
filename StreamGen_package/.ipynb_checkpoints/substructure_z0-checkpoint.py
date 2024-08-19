@@ -51,6 +51,7 @@ class Substructure:
         self.host_profiles = []          # Host galaxy profiles
         self.Norb_list = []              # Number of orbits at z=0
         self.sats_per_gal = [len(self.df)]  # Number of satellites per galaxy
+        self.mass_lost = []
 
     def handle_directory(self, file_path):
         """
@@ -182,6 +183,7 @@ class Substructure:
         redshift = data['redshift']
         dekel_host_coords_at = self.galaxy.host_coords_alltime
         vel_disp_z0 = data['velocity_dispersion']
+        mass_lost = data['mass_lost_alls']
 
         # Calculate energy and angular momentum for the satellite at the first pericenter
         coords_cart, vels_cart = helpers.rvcyltocart(coord_peris1[0], vel_peris1[0])
@@ -197,7 +199,7 @@ class Substructure:
         # Preprocess orbits and extract pericenters and apocenters
         pericenter_locs_hold, apocenter_locs_hold, all_peris_hold, all_apos_hold, Norb_z0 = self.preprocess_orbits(sat_i, idx_zacc, pericenter_locs1, all_peris1, apocenter_locs1, all_apos1, time_between_apocenters, allz_m1)
 
-        # Handle Monte Carlo orbit integration and load necessary data
+        # Handle sampled orbits and load necessary data
         ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel , mod_mass_at, num_mc, ecc_est = self.handle_mc_files(data, sat_i, pericenter_locs_hold, apocenter_locs_hold, all_peris_hold, all_apos_hold, Norb_z0)
 
         # Calculate mean slopes for L-deltaPsi and E-tba metrics
@@ -232,12 +234,17 @@ class Substructure:
             self.PL_over_PE_arr.append(np.nan)
             self.PL_list.append(np.nan)
             self.PE_list.append(np.nan)
-
-        self.id_sat_stream.append(id_ss_fwd)
+        # If satellite has lost < 10% of its total mass by z=0, consider it to be intact
+        if mass_lost < 0.1:
+            self.id_sat_stream.append(0)
+        else:
+            self.id_sat_stream.append(id_ss_fwd)
+            
+        self.mass_lost.append(mass_lost)
 
     def handle_mc_files(self, data, sat_i, pericenter_locs_hold, apocenter_locs_hold, all_peris_hold, all_apos_hold, Norb_z0):
         """
-        Handle loading or computing Monte Carlo orbits and saving the data to files.
+        Handle loading or computing of sampled orbits and saving the data to files.
 
         Parameters:
         - data: Data for the current satellite.
@@ -289,11 +296,11 @@ class Substructure:
 
         return ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel, mod_mass_at, num_mc, ecc_est
 
-    def main_processing_loop(self):
+    def main_processing_loop(self, start, stop):
         """
         Main loop for processing all satellites in the DataFrame.
         """
-        for sat_i in range(6, 7):  # Limit processing to one satellite for now (change range as needed)
+        for sat_i in range(start, stop):  # Limit processing to one satellite for now (change range as needed)
             self.perform_calculations(sat_i)
             print(self.id_sat_stream)
             print(self.PL_over_PE_arr)

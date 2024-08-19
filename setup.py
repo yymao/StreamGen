@@ -9,11 +9,38 @@ setup(
         'scipy==1.10.0',
         'numpy==1.24.3',
         'matplotlib==3.2.2',
-        'random',
         'pandas',
-        'glob',
-        'multiprocessing',
-        'tqdm'
+        'tqdm',
+        'ipykernel',
+        'jupyterlab',
+        # Additional required packages
+        'aiohttp==3.9.4',
+        'attrs',
+        'codecov==2.1.12',
+        'requests',
+        'click',
+        'future',
+        'nose',
+        'cython',
+        'beautifulsoup4',
+        'zipp',
+        'tornado',
+        'jsonschema',
+        'sympy',
+        'fsspec',
+        'werkzeug',
+        'wrapt',
+        'jinja2',
+        'threadpoolctl',
+        'idna',
+        'html5lib',
+        'keyring',
+        'numba',
+        # Specific versions required by tensorflow and virtualenv
+        'typing-extensions==4.5.0',
+        'platformdirs<3',
+        'traitlets>=5.3.0'
+        # If additional packages are needed, they can be added here
     ],
     entry_points={
         'console_scripts': [

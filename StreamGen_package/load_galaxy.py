@@ -282,7 +282,7 @@ class Galaxy:
     
     def get_filtered_rows_as_dataframe(self, attributes):
         """
-        Return filtered satellite data as a pandas DataFrame based on specific attributes.
+        Return filtered (cut to for satellites to remain inside host at z = 0 and have a pericenter greater than 4 kpc) satellite data as a pandas DataFrame based on specific attributes.
 
         Args:
             attributes (list): List of attributes to include in the DataFrame.
