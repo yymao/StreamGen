@@ -91,7 +91,6 @@ def stream_or_shell_integrate_OLD(m_sat, sat_host_dist, peri_arr, apo_arr, coord
             # Convert pericenter coordinates to Cartesian and calculate energy and angular momentum
             coords_cart, vels_cart = rvcyltocart(coord_peri[ii], vel_peri[ii])
             E_new, L_new = EnergyAngMom(coords_cart, vels_cart, Phi(total_profile, sathd), m_sat[redshift_id])
-            print('sathd ssIO', sathd)
             ii += 1
             E, L = EnergyAngMomGivenRpRa(total_profile, rp, ra)
             E_sat.append(E_new)
@@ -220,7 +219,6 @@ def stream_or_shell(m_sat, host_coords, sat_host_dist, peri_arr, apo_arr, coord_
     - Various arrays of computed physical quantities (Psi_E, Psi_L, deltaPsi, etc.).
     """
     what_is_it = 0
-    print('m_sat', m_sat)
     
     # Initialization
     E_sat, L_sat, l_s = [], [], []
@@ -246,7 +244,6 @@ def stream_or_shell(m_sat, host_coords, sat_host_dist, peri_arr, apo_arr, coord_
             coords_cart, vels_cart = rvcyltocart(coord_peri[j], vel_peri[j])
             E_new, L_new = EnergyAngMom(coords_cart, vels_cart, Phi(total_profile, sathd), msat)
             E, L = EnergyAngMomGivenRpRa(total_profile, rp, ra)
-            print('ELnew', E_new, L_new)
             E_sat.append(E_new)
             L_sat.append(L_new)
             l_s.append((np.sqrt(3) + 2) * s * L_new)
@@ -273,7 +270,6 @@ def stream_or_shell(m_sat, host_coords, sat_host_dist, peri_arr, apo_arr, coord_
 
             deltaPsi = np.arccos(np.dot(coord_apo_0, coord_apo_1) / (np.linalg.norm(coord_apo_0) * np.linalg.norm(coord_apo_1)))
             deltaPsi_arr.append(deltaPsi)
-            print('deltaPsi, ', deltaPsi)
 
         mod_deltaPsi_arr = np.array(deltaPsi_arr)
         mod_t_apo_arr = time_between_apo
@@ -330,28 +326,7 @@ def stream_or_shell(m_sat, host_coords, sat_host_dist, peri_arr, apo_arr, coord_
             else:
                 Psi_E_arr.append(rosette_angle_arr_flip[i])
 
-        if len(Psi_L_arr) > 1:
-            try:
-                y_start = np.divide(Psi_L_arr, Psi_E_arr)
-                x_start = t[max_loc[0:len(np.array(Psi_L_arr))]]
-                z_score = zscore(y_start)
-                y_hold = y_start[np.where(np.abs(y_start) > 0.01)]
-                x_hold = x_start[np.where(np.abs(y_start) > 0.01)]
-                z_score_hold = zscore(y_hold)
-                y = y_hold[np.where(np.abs(z_score_hold) < 1.05)]
-                x = x_hold[np.where(np.abs(z_score_hold) < 1.05)]
-                x_scaler, y_scaler = StandardScaler(), StandardScaler()
-                x_train = x_scaler.fit_transform(x[..., None])
-                y_train = y_scaler.fit_transform(y[..., None])
-                model = HuberRegressor(epsilon=1)
-                model.fit(x_train, y_train.ravel())
-                test_x = t[max_loc[0:len(np.array(Psi_L_arr))]]
-                predictions = y_scaler.inverse_transform(model.predict(x_scaler.transform(test_x[..., None])))
-                print('predictions', predictions)
-            except:
-                predictions = np.divide(Psi_L_arr, Psi_E_arr)
-        else:
-            predictions = np.divide(Psi_L_arr, Psi_E_arr)
+        predictions = np.divide(Psi_L_arr, Psi_E_arr)
 
         if len(Psi_L_arr) > 1:
             if np.abs(predictions[0]) < 1:

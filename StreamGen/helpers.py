@@ -207,7 +207,7 @@ def find_apo_peri_from_pos_vel(pos_vel_arr):
         
     return satdist, min_loc, max_loc
 
-# Function to predict values using Huber regression and outlier handling
+# Function to predict values using Huber regression and outlier handling, only in calculating rosette petal angle
 def get_huber_predictions(x_in, y_in):
     """
     Applies Huber regression to predict values while handling outliers.
@@ -241,7 +241,7 @@ def get_huber_predictions(x_in, y_in):
             test_x = x_in
             predictions = y_scaler.inverse_transform(model.predict(x_scaler.transform(test_x[..., None])))
         except: 
-            print("Huber exception!")
+            #print("Huber exception, see rosette calculation!")
             predictions = y_in
     else: 
         predictions = y_in

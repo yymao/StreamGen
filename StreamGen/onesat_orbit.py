@@ -39,11 +39,6 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     - satdist: Array of satellite distances from the host.
     - t_new: Adjusted time array for integration.
     """
-    print('in integrate_orbit')
-    print('coord_at', coord_at)
-    print('coord_at[redshift_id]', coord_at[redshift_id])
-    print(random_draw)
-    print('period_est_correction', period_est_correction)
     
     # Initial conditions for the orbit
     xv_o = coord_at[redshift_id]
@@ -82,7 +77,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
 
     # Set integration time parameters based on the period estimate
     if period_est < 1.0:
-        print('Period less than 1 Gyr! Integrating longer to decrease noise')
+        #print('Period less than 1 Gyr! Integrating longer to decrease noise')
         tmax = math.ceil(period_est * 10)  # Extend integration time for short periods
         Nstep = math.ceil(tmax / timestep)
     elif 1 < period_est < 5:

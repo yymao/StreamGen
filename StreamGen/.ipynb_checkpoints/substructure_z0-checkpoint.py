@@ -204,7 +204,7 @@ class Substructure:
 
         # Calculate mean slopes for L-deltaPsi and E-tba metrics
         mean_slope_L_Psi, mean_slope_E_tba = MC_metric.detrivatives_metric(ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, mod_mass_at, E, L, num_mc, 0)
-        print(mean_slope_L_Psi, mean_slope_E_tba)
+        #print(mean_slope_L_Psi, mean_slope_E_tba)
 
         # Forward integration from z=0
         redshift_start = 0
@@ -259,7 +259,7 @@ class Substructure:
         - Various arrays and values related to Monte Carlo orbit integration and the satellite's properties.
         """
         # Directory for saving files
-        file_mc = f'/scratch/gpfs/dropulic/StreamGen/StreamGen_package/{self.tag}/'
+        file_mc = f'/scratch/gpfs/dropulic/StreamGen/StreamGen/{self.tag}/'
         self.handle_directory(file_mc)
 
         # Extract satellite mass and eccentricity estimate
@@ -283,7 +283,7 @@ class Substructure:
             ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel = [np.load(path, allow_pickle=True) for path in paths]
             host_total_profile = self.galaxy.get_host_profile(0)
             num_mc = len(ca_mc)
-            print(num_mc)
+            #print(num_mc)
             print("Loaded MC files")
         else:
             # Integrate Monte Carlo orbits if data is not available
@@ -302,7 +302,7 @@ class Substructure:
         """
         for sat_i in range(start, stop):  # Limit processing to one satellite for now (change range as needed)
             self.perform_calculations(sat_i)
-            print(self.id_sat_stream)
-            print(self.PL_over_PE_arr)
+            #print(self.id_sat_stream)
+            #print(self.PL_over_PE_arr)
 
 

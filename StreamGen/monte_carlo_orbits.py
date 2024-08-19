@@ -116,8 +116,6 @@ def MC_orbits_SG(galaxy, coordinate, sigma, coord_at, host_coords, mass, redshif
     
     # Extract satellite coordinates and velocities at the current redshift
     coordinate = coordinate[redshift_id]
-    print('coordinate', coordinate)
-    print('sigma', sigma)
     
     coord_init = coordinate[:3]
     vels_init = coordinate[3:]
