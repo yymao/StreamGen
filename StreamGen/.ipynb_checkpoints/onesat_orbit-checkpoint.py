@@ -14,7 +14,7 @@ import numpy as np
 from galhalo import Reff  # Function to calculate effective radius
 import helpers
 
-def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction=0, forward=True, random_draw=None, inLLcorner=False):
+def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction=0,random_draw=None):
     """
     Integrate the orbit of a satellite galaxy, estimating its orbit over time.
 
@@ -27,9 +27,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     - time_btwn_apo: Array of time intervals between successive apocenters.
     - ecc_est: Estimated eccentricity of the orbit.
     - period_est_correction: Correction factor for the period estimate (default is 0).
-    - forward: Boolean flag for forward or backward integration (default is True).
     - random_draw: Random velocities for initial conditions, if provided (default is None).
-    - inLLcorner: Boolean flag for low-likelihood corner cases (default is False).
 
     Returns:
     - time: Array of time steps.
@@ -41,11 +39,6 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     - satdist: Array of satellite distances from the host.
     - t_new: Adjusted time array for integration.
     """
-    print('in integrate_orbit')
-    print('coord_at', coord_at)
-    print('coord_at[redshift_id]', coord_at[redshift_id])
-    print(random_draw)
-    print('period_est_correction', period_est_correction)
     
     # Initial conditions for the orbit
     xv_o = coord_at[redshift_id]
@@ -59,10 +52,6 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     timestep = 0.01
     if ecc_est > 0.3:
         timestep = 0.001
-    if inLLcorner:
-        timestep /= 10
-        if ecc_est < 0.3:
-            timestep /= 10
     
     # Estimate the orbital period based on the satellite distance and mass
     if len(time_btwn_apo) > 0:
@@ -70,7 +59,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         if period_est_correction != 0:
             period_est = np.abs(time_btwn_apo[period_est_correction])
     else: 
-        period_est = orbital_period_estimate(satdist_init, mass)
+        period_est = helpers.orbital_period_estimate(satdist_init, mass)
 
     # Cap the period estimate to avoid overly long integration times
     if period_est > 20:
@@ -88,7 +77,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
 
     # Set integration time parameters based on the period estimate
     if period_est < 1.0:
-        print('Period less than 1 Gyr! Integrating longer to decrease noise')
+        #print('Period less than 1 Gyr! Integrating longer to decrease noise')
         tmax = math.ceil(period_est * 10)  # Extend integration time for short periods
         Nstep = math.ceil(tmax / timestep)
     elif 1 < period_est < 5:
@@ -98,13 +87,9 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         tmax = math.ceil(period_est)
         Nstep = math.ceil(tmax / timestep)
 
-    # Set the time array for integration, depending on forward or backward integration
-    if forward:
-        tmin = 0
-        tmax = tmax
-    else:
-        tmin = 0
-        tmax = -tmax
+    # Set the time array for integration
+    tmin = 0
+    tmax = tmax
 
     t = np.linspace(tmin, tmax, Nstep + 1)
 
@@ -120,7 +105,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
 
     # Find apocenter and pericenter locations from the position and velocity data
     t_new = []
-    satdist, min_loc, max_loc = helpers.find_apo_peri_from_pos_vel(pos_vel, forward)
+    satdist, min_loc, max_loc = helpers.find_apo_peri_from_pos_vel(pos_vel)
     distdiff = np.abs(satdist[0] - satdist_init)
     
     # Check if the integration needs to be extended based on the number of pericenters
@@ -150,12 +135,10 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         o = orb.orbit(xv_in)
         if n > 5:
             condition = False
-        if forward:
-            tmin = 0
-            tmax = tmax
-        else:
-            tmin = 0
-            tmax = -tmax
+
+        tmin = 0
+        tmax = tmax
+
 
         t_new = np.linspace(tmin, tmax, Nstep + 1)
         o.integrate(t_new, total_profile, mass)
@@ -163,7 +146,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         pos_vel = o.xvArray
 
         # Recalculate apocenter and pericenter locations
-        satdist, min_loc, max_loc = helpers.find_apo_peri_from_pos_vel(pos_vel, forward)
+        satdist, min_loc, max_loc = helpers.find_apo_peri_from_pos_vel(pos_vel)
 
         # Check if enough pericenters have been found
         if len(min_loc[0]) < 5 and condition != False:

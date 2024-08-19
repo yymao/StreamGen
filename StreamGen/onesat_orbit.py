@@ -59,7 +59,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         if period_est_correction != 0:
             period_est = np.abs(time_btwn_apo[period_est_correction])
     else: 
-        period_est = orbital_period_estimate(satdist_init, mass)
+        period_est = helpers.orbital_period_estimate(satdist_init, mass)
 
     # Cap the period estimate to avoid overly long integration times
     if period_est > 20:

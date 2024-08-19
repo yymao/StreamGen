@@ -23,7 +23,7 @@ u.add_enabled_units(cu)
 sys.path.insert(0, '/tigress/dropulic/SatGen/')
 
 class Substructure:
-    def __init__(self, df, tag, galaxy):
+    def __init__(self, df, tag, galaxy, num_samples):
         """
         Initialize the Substructure class with satellite data, a tag, and a galaxy object.
 
@@ -35,6 +35,7 @@ class Substructure:
         self.df = df
         self.tag = tag
         self.galaxy = galaxy
+        self.num_samples = num_samples
         self.initialize_variables()
 
     def initialize_variables(self):
@@ -287,7 +288,7 @@ class Substructure:
             print("Loaded MC files")
         else:
             # Integrate Monte Carlo orbits if data is not available
-            ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel, num_mc = monte_carlo_orbits.integrate_mc_orbits(self.galaxy, np.hstack([data.coordinates_hold, data.velocities_hold]), data.velocity_dispersion, np.hstack([data.coordinates_hold, data.velocities_hold]), self.galaxy.host_coords_alltime, mod_mass_at, 0, data.time_between_apocenters, ecc_est, 20, period_est_correction=0)
+            ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel, num_mc = monte_carlo_orbits.integrate_mc_orbits(self.galaxy, np.hstack([data.coordinates_hold, data.velocities_hold]), data.velocity_dispersion, np.hstack([data.coordinates_hold, data.velocities_hold]), self.galaxy.host_coords_alltime, mod_mass_at, 0, data.time_between_apocenters, ecc_est, self.num_samples, period_est_correction=0)
             
             # Save computed data
             for path, data in zip(paths, [ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel]):
