@@ -11,7 +11,9 @@ setup(
         'matplotlib==3.2.2',
         'random',
         'pandas',
-        'glob'
+        'glob',
+        'multiprocessing',
+        'tqdm'
     ],
     entry_points={
         'console_scripts': [
