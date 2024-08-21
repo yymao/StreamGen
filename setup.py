@@ -16,7 +16,7 @@ setup(
         # Additional required packages
         'aiohttp==3.9.4',
         'attrs',
-        'codecov==2.1.12',
+        'codecov',
         'requests',
         'click',
         'future',
