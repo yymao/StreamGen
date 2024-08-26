@@ -1,7 +1,0 @@
-tree769_lgM12.38.npz
-tree503_lgM11.79.npz
-*.npy
-substructure.py
-.ipynb_checkpoints/ 
-.gitignore
-_pycache_
