@@ -13,10 +13,10 @@ setup(
         'tqdm',
         'ipykernel',
         'jupyterlab',
-        # Additional required packages to not throw error
+        # Additional required packages
         'aiohttp==3.9.4',
         'attrs',
-        'codecov',
+        'codecov==2.1.12',
         'requests',
         'click',
         'future',
@@ -36,21 +36,21 @@ setup(
         'html5lib',
         'keyring',
         'numba',
+        # Specific versions required by tensorflow and virtualenv
         'typing-extensions==4.5.0',
         'platformdirs<3',
-        'traitlets>=5.3.0',
-        'SWIG',
-        'Comolopy',
-        'fast_histogram',
-        'lmfit'
+        'traitlets>=5.3.0'
+        # If additional packages are needed, they can be added here
     ],
     entry_points={
         'console_scripts': [
+            # If you have scripts to run, specify them here
+            # 'myscript = mypackage.myscript:main',
         ],
     },
     author='Adriana Dropulic',
     author_email='dropulic@princeton.edu',
-    description='StreamGen, arxiv:2409.XXXX',
+    description='StreamGen, arxiv:2407.XXXX',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/adropulic/StreamGen',
