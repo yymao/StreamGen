@@ -1,8 +1,9 @@
 # Import necessary libraries and custom modules
 import numpy as np
 import helpers
-import sys
-sys.path.insert(0, '/tigress/dropulic/SatGen/')  # Add custom library path
+import sys, os
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path)
 from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Import galaxy profile functions
 import pandas as pd
 import scipy
@@ -155,7 +156,7 @@ def detrivatives_metric(ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_m
             tba_z0.append(tba_list_mc[0])
             deltaPsi_z0.append(np.pi * 2 - deltaPsi_arr_mc[0])
         except:
-            print("Exception occurred!")
+            print("Exception occurred, check sampled orbits!")
 
     # Create DataFrame for Monte Carlo results
     df_MC = pd.DataFrame({'E': E_z0, 'L': L_z0, 'tba': tba_z0, 'deltaPsi': deltaPsi_z0})
@@ -265,7 +266,6 @@ def stream_or_shell_integrate(galaxy, m_sat, sat_host_dist, peri_arr, apo_arr, c
     - Various arrays of computed physical quantities (Psi_E, Psi_L, deltaPsi, etc.).
     - Integer indicating the classification of the orbit (0: intact satellite, 1: stream, 2: shell).
     """
-    print('in stream_or_shell_integrate')
     what_is_it = 0
 
     # Initialization

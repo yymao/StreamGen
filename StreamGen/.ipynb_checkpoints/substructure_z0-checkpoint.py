@@ -20,7 +20,8 @@ cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 u.add_enabled_units(cu)
 
 # Add custom library path for SatGen
-sys.path.insert(0, '/tigress/dropulic/SatGen/')
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path)
 
 class Substructure:
     def __init__(self, df, tag, galaxy, num_samples):
@@ -46,9 +47,9 @@ class Substructure:
         self.lookback = []               # Lookback time array
         self.peri_all_reintegrate = []   # Reintegrated pericenter positions
         self.apo_all_reintegrate = []    # Reintegrated apocenter positions
-        self.PL_over_PE_arr = []         # Ratio of PL to PE
-        self.PE_list = []                # List of PE values
-        self.PL_list = []                # List of PL values
+        self.PL_over_PE_arr = []         # Ratio of PL to PE (shell angle to stream angle)
+        self.PE_list = []                # List of PE values (stream angle)
+        self.PL_list = []                # List of PL values (shell angle)
         self.host_profiles = []          # Host galaxy profiles
         self.Norb_list = []              # Number of orbits at z=0
         self.sats_per_gal = [len(self.df)]  # Number of satellites per galaxy
@@ -297,7 +298,7 @@ class Substructure:
 
         return ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel, mod_mass_at, num_mc, ecc_est
 
-    def main_processing_loop(self, start, stop):
+    def classify_substructure(self, start, stop):
         """
         Main loop for processing all satellites in the DataFrame.
         """

@@ -1,6 +1,7 @@
 # Orbits simulation and Monte Carlo integration for satellite galaxies
-import sys
-sys.path.insert(0, '/tigress/dropulic/SatGen/') #!change this to your path to SatGen to load in necessary 
+import sys, os
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path)
 from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi
 import multiprocessing as mp
 from tqdm import tqdm

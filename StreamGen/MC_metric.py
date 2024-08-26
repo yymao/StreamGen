@@ -1,8 +1,9 @@
 # Import necessary libraries and custom modules
 import numpy as np
 import helpers
-import sys
-sys.path.insert(0, '/tigress/dropulic/SatGen/')  # Add custom library path
+import sys, os
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path)
 from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Import galaxy profile functions
 import pandas as pd
 import scipy

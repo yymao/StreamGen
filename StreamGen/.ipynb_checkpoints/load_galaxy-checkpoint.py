@@ -1,8 +1,9 @@
 # File to load in SatGen galaxies and relevant coordinates
 import numpy as np
 from scipy.signal import argrelmin, argrelextrema, argrelmax
-import sys
-sys.path.insert(0, '/tigress/dropulic/SatGen/') #!change this to your path to SatGen to load in necessary analysis scripts
+import sys, os
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path) #!change this to your path to SatGen to load in necessary analysis scripts
 import aux
 from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi
 from galhalo import Reff
@@ -70,7 +71,7 @@ class Galaxy:
         self.rhs = [] # halo radius within which density is Delta times rhoc [kpc] for subhalos
         self.rh_halfs = [] # half-mass radii of subhalos
         self.rho_bars = [] # mean density [M_sun kpc^-3] within radius r=sqrt(R^2+z^2) for subhalos
-        self.mass_ratios = [] # ratio of final stellar mass to final halo virial mass at z = 0 for subhalos  
+        self.mass_ratios = [] # ratio of final stellar mass to final halo virial mass at z = 0 for subhalos
         
         # Load host and subhalo properties from file
         with np.load(file_gal) as f:

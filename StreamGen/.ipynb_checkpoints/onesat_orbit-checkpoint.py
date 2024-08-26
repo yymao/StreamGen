@@ -1,7 +1,8 @@
 # Orbits simulation script for integrating satellite orbits
 
-import sys
-sys.path.insert(0, '/tigress/dropulic/SatGen/')  # Add custom library path
+import sys, os
+satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
+sys.path.insert(0, satgen_path)
 import aux
 import orbit as orb
 from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Importing various galaxy profiles and utilities
