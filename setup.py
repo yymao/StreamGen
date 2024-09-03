@@ -40,7 +40,7 @@ setup(
         'platformdirs<3',
         'traitlets>=5.3.0',
         'SWIG',
-        'Comolopy',
+        'cosmolopy',
         'fast_histogram',
         'lmfit'
     ],
