@@ -261,7 +261,7 @@ class Substructure:
         - Various arrays and values related to Monte Carlo orbit integration and the satellite's properties.
         """
         # Directory for saving files
-        file_mc = f'./../../StreamGen/{self.tag}/'
+        file_mc = f'./../StreamGen/{self.tag}/'
         self.handle_directory(file_mc)
 
         # Extract satellite mass and eccentricity estimate
