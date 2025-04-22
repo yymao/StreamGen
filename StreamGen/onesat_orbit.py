@@ -1,19 +1,10 @@
 # Orbits simulation script for integrating satellite orbits
 
-import sys, os
-satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
-sys.path.insert(0, satgen_path)
-import aux
-import orbit as orb
-from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Importing various galaxy profiles and utilities
-import multiprocessing as mp
-from tqdm import tqdm  # Progress bar for loops
-import scipy
+import SatGen.orbit as orb
 import math
 import time as tt  # Importing time module for performance measurement
 import numpy as np
-from galhalo import Reff  # Function to calculate effective radius
-import helpers
+from . import helpers
 
 def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction=0,random_draw=None):
     """
@@ -40,7 +31,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     - satdist: Array of satellite distances from the host.
     - t_new: Adjusted time array for integration.
     """
-    
+
     # Initial conditions for the orbit
     xv_o = coord_at[redshift_id]
     z = xv_o[2]
@@ -48,24 +39,24 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     y = xv_o[0] * np.sin(xv_o[1])
     satdist_init = np.linalg.norm(np.array([x, y, z]))  # Initial distance of the satellite from the host
     mass = mass[redshift_id]
-    
+
     # Set the integration timestep based on eccentricity and low-likelihood corner cases
     timestep = 0.01
     if ecc_est > 0.3:
         timestep = 0.001
-    
+
     # Estimate the orbital period based on the satellite distance and mass
     if len(time_btwn_apo) > 0:
         period_est = np.abs(time_btwn_apo[0])
         if period_est_correction != 0:
             period_est = np.abs(time_btwn_apo[period_est_correction])
-    else: 
+    else:
         period_est = helpers.orbital_period_estimate(satdist_init, mass)
 
     # Cap the period estimate to avoid overly long integration times
     if period_est > 20:
         period_est = 20
-    
+
     # Initializing the input conditions for the orbit integration
     if random_draw is not None:
         xv_in = np.concatenate((xv_o[:3], random_draw), axis=None)
@@ -108,7 +99,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
     t_new = []
     satdist, min_loc, max_loc = helpers.find_apo_peri_from_pos_vel(pos_vel)
     distdiff = np.abs(satdist[0] - satdist_init)
-    
+
     # Check if the integration needs to be extended based on the number of pericenters
     n = 2
     condition = False  # Boolean flag to check if we have enough pericenters
@@ -155,7 +146,7 @@ def integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_
         else:
             condition = False
         n += 1
-    
+
     # Adjust the min/max locations to ensure consistent lengths
     min_locs = []
     max_locs = []

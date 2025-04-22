@@ -1,27 +1,23 @@
 # Substructure class for analyzing satellite orbits and their evolution
 
 import numpy as np
-import matplotlib.pyplot as plt
 import os
-import helpers
-import MC_metric
-import onesat_metric
-import onesat_orbit
-import monte_carlo_orbits
-import astropy
-import sys
+
+from . import helpers
+from . import MC_metric
+from . import onesat_orbit
+from . import monte_carlo_orbits
+
 from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
 from astropy.cosmology import units as cu
-from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Import galaxy profile models
+
+from SatGen.profiles import Phi  # Import galaxy profile models
 
 # Define cosmology model
 cosmo = FlatLambdaCDM(H0=70, Om0=0.3)
 u.add_enabled_units(cu)
 
-# Add custom library path for SatGen
-satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
-sys.path.insert(0, satgen_path)
 
 class Substructure:
     def __init__(self, df, tag, galaxy, num_samples):
@@ -86,7 +82,7 @@ class Substructure:
         paths = [f"{file_path}{name}_{sat_tag}_{tag}.npy" for name in [
             'ca_mc', 'cp_mc', 'vels_peri_mc', 'vels_apo_mc', 'satdist_mc', 't_mc', 'tba_mc', 'host_total_profile', 'pos_vel'
         ]]
-        
+
         # Load data if files exist, otherwise compute and save the data
         if all(os.path.exists(path) for path in paths):
             data = [np.load(path, allow_pickle=True) for path in paths]
@@ -96,7 +92,7 @@ class Substructure:
             for path, d in zip(paths, data):
                 np.save(path, np.array(d, dtype=object), allow_pickle=True)
             print("Saved new data")
-        
+
         return data
 
     def preprocess_orbits(self, sat_i, idx_zacc, pericenter_locs1, all_peris1, apocenter_locs1, all_apos1, time_between_apocenters, allz_m1):
@@ -121,7 +117,7 @@ class Substructure:
         idx_mass_res_hold = 0
         entered = False
         peri_num = 0
-        
+
         # Find the index where the mass drops below a threshold
         try:
             idx_mass_res = np.where((allz_m1[:][0:idx_zacc] <= 10**6))[0][-1]
@@ -129,7 +125,7 @@ class Substructure:
         except:
             idx_mass_res = 0
             idx_mass_res_hold = 0
-            
+
         # Filter pericenters based on accretion redshift
         for elem_i, elem_j in zip(pericenter_locs1, all_peris1):
             if elem_i < idx_zacc:
@@ -211,12 +207,12 @@ class Substructure:
         # Forward integration from z=0
         redshift_start = 0
         timetot, Nstep, tmax, pos_vel, min_loc, max_loc, satdist, t = onesat_orbit.integrate_orbit(self.galaxy, np.hstack([coord1, vel_arr1]), dekel_host_coords_at, mod_mass_at, redshift_start, time_between_apocenters, ecc_est)
-        
+
         # Calculate rosette angles and reintegrate peri-apo properties
         half_period_locs_fwd, rosette_angle_fwd = MC_metric.calc_rosette_angle(max_loc, min_loc, pos_vel)
         rosette_angle_fwd_fit = helpers.get_huber_predictions(t[max_loc[0:len(rosette_angle_fwd)]], np.array(rosette_angle_fwd))
         all_apo, all_peri, ca, cp, tba, vels_peri, vels_apo = helpers.peri_apo_props_reintegrate(timetot, Nstep, tmax, pos_vel, min_loc, max_loc, satdist, t)
-        
+
         # Determine if the satellite is a stream or shell
         id_ss_fwd, PE_fwd, PL_fwd, deltaPsiarr_fwd, mod_deltaPsiarr_fwd, Lsat_fwd, Esat_fwd, n_orb, Lmod_sat, Emod_sat, fit_PL_PE_fwd, M_Rp_arr_fwd = MC_metric.stream_or_shell_integrate(self.galaxy, mod_mass_at, satdist[min_loc], all_peri, all_apo, cp, ca, tba, dekel_host_coords_at, redshift_start, t + np.max(cosmo.age(self.galaxy.redshift[0:idx_zacc] * cu.redshift) / u.Gyr), max_loc, Norb_z0, vels_peri, min_loc, rosette_angle_fwd_fit, vel_disp_z0, vel_arr1, mean_slope_L_Psi, mean_slope_E_tba, forward=True)
 
@@ -227,7 +223,7 @@ class Substructure:
         else:
             self.peri_all_reintegrate.append(np.nan)
             self.apo_all_reintegrate.append(np.nan)
-        
+
         if len(PL_fwd) > 0:
             self.PL_over_PE_arr.append(np.divide(PL_fwd[0], PE_fwd[0]))
             self.PL_list.append(PL_fwd[0])
@@ -241,7 +237,7 @@ class Substructure:
             self.id_sat_stream.append(0)
         else:
             self.id_sat_stream.append(id_ss_fwd)
-            
+
         self.mass_lost.append(mass_lost)
 
     def handle_mc_files(self, data, sat_i, pericenter_locs_hold, apocenter_locs_hold, all_peris_hold, all_apos_hold, Norb_z0):
@@ -279,7 +275,7 @@ class Substructure:
         paths = [f"{file_mc}{name}_{sat_tag}_{self.tag}.npy" for name in [
             'ca_mc', 'cp_mc', 'vels_peri_mc', 'vels_apo_mc', 'satdist_mc', 't_mc', 'tba_mc', 'host_total_profile', 'pos_vel'
         ]]
-        
+
         # Load or compute Monte Carlo data
         if all(os.path.exists(path) for path in paths):
             ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel = [np.load(path, allow_pickle=True) for path in paths]
@@ -290,7 +286,7 @@ class Substructure:
         else:
             # Integrate Monte Carlo orbits if data is not available
             ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel, num_mc = monte_carlo_orbits.integrate_mc_orbits(self.galaxy, np.hstack([data.coordinates_hold, data.velocities_hold]), data.velocity_dispersion, np.hstack([data.coordinates_hold, data.velocities_hold]), self.galaxy.host_coords_alltime, mod_mass_at, 0, data.time_between_apocenters, ecc_est, self.num_samples, period_est_correction=0)
-            
+
             # Save computed data
             for path, data in zip(paths, [ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, pos_vel]):
                 np.save(path, np.array(data, dtype=object), allow_pickle=True)

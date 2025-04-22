@@ -1,0 +1,12 @@
+[project]
+name = "StreamGen"
+version = "0.1.0"
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "pandas",
+    "astropy",
+    "tqdm",
+    "SatGen@git+https://github.com/yymao/SatGen.git#egg=master",
+]

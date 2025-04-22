@@ -1,18 +1,14 @@
 # Import necessary libraries and custom modules
 import numpy as np
-import helpers
-import sys, os
-satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
-sys.path.insert(0, satgen_path)
-from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi  # Import galaxy profile functions
+from . import helpers
+from SatGen.profiles import Dekel, MN, Phi  # Import galaxy profile functions
 import pandas as pd
 import scipy
-import onesat_orbit
-from galhalo import Reff  # Function to calculate effective radius
+from SatGen.galhalo import Reff  # Function to calculate effective radius
 
 def calc_E_L_Tr_dPsi_mc(ca_list, cp_list, vels_peri_list, vels_apo_list, satdist_list, t_list, tba_list, total_profile, m_sat):
     """
-    Calculate energy (E), angular momentum (L), and deltaPsi (angle between successive apocenters) for each stream, 
+    Calculate energy (E), angular momentum (L), and deltaPsi (angle between successive apocenters) for each stream,
     selecting the closest to z=0.
 
     Parameters:
@@ -42,15 +38,15 @@ def calc_E_L_Tr_dPsi_mc(ca_list, cp_list, vels_peri_list, vels_apo_list, satdist
         z_a = ca[2]
         x_a = ca[0] * np.cos(ca[1])
         y_a = ca[0] * np.sin(ca[1])
-        
+
         z_p = cp[2]
         x_p = cp[0] * np.cos(cp[1])
         y_p = cp[0] * np.sin(cp[1])
-        
+
         # Calculate satellite distances
         satdist_a = np.linalg.norm(np.array([x_a, y_a, z_a]))
         satdist_p = np.linalg.norm(np.array([x_p, y_p, z_p]))
-        
+
         # Convert to Cartesian coordinates and calculate energy and angular momentum
         coords_cart, vels_cart = helpers.rvcyltocart(cp, vp)
         E, L = helpers.EnergyAngMom(coords_cart, vels_cart, Phi(total_profile, satdist_p), m_sat)
@@ -79,7 +75,7 @@ def calc_E_L_Tr_dPsi_mc(ca_list, cp_list, vels_peri_list, vels_apo_list, satdist
         # Calculate angle between successive apocenters
         deltaPsi = np.arccos(np.dot(coord_apo_0, coord_apo_1) / (np.linalg.norm(coord_apo_0) * np.linalg.norm(coord_apo_1)))
         deltaPsi_arr.append(deltaPsi)
-    
+
     return E_arr, L_arr, deltaPsi_arr, tba_list
 
 def calc_rosette_angle(max_loc, min_loc, pos_vel):
@@ -104,7 +100,7 @@ def calc_rosette_angle(max_loc, min_loc, pos_vel):
         # Calculate half-period locations
         hf_pd_loc_i = np.array([int(max_loc_i + mm_loc_diff_i), int(max_loc_i - mm_loc_diff_i)])
         half_period_locs.append(hf_pd_loc_i)
-        
+
         # Ensure indices are within bounds
         if (hf_pd_loc_i[0] > 0) and (hf_pd_loc_i[1] > 0) and (hf_pd_loc_i[1] < len(pos_vel[:, 0])) and (hf_pd_loc_i[0] < len(pos_vel[:, 0])):
             # Convert cylindrical coordinates to Cartesian and compute rosette angle
@@ -114,7 +110,7 @@ def calc_rosette_angle(max_loc, min_loc, pos_vel):
             rosette_angle_arr.append(rosette_angle)
         else:
             rosette_angle_arr.append(np.inf)
-    
+
     return half_period_locs, rosette_angle_arr
 
 def detrivatives_metric(ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_mc, tba_mc, host_total_profile, mod_mass_at, E_sat, L_sat, num_mc, redshift):
@@ -148,7 +144,7 @@ def detrivatives_metric(ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_m
     # Loop over Monte Carlo simulations
     for mc_i in range(num_mc):
         E_arr_mc, L_arr_mc, deltaPsi_arr_mc, tba_list_mc = calc_E_L_Tr_dPsi_mc(ca_mc[mc_i], cp_mc[mc_i], vels_peri_mc[mc_i], vels_apo_mc[mc_i], satdist_mc[mc_i], t_mc[mc_i], tba_mc[mc_i], host_total_profile, mod_mass_at[0])
-        
+
         try:
             # Append the closest to z=0 values
             E_z0.append(E_arr_mc[0])
@@ -179,14 +175,14 @@ def detrivatives_metric(ca_mc, cp_mc, vels_peri_mc, vels_apo_mc, satdist_mc, t_m
             break
         if E < bin_edges_E[0]:
             break
-                
+
     for bin_edgeL in range(0, len(bin_edges_L) - 1):
         bin_no_Etba = bin_edgeL
         if (bin_edges_L[bin_edgeL] <= L) and (L < bin_edges_L[bin_edgeL + 1]):
             break
         if L < bin_edges_L[0]:
             break
-                
+
     # Fit L vs deltaPsi and E vs tba for each bin
     df_MC['binnumber_E'] = binnumber_E
     df_MC['binnumber_L'] = binnumber_L
@@ -294,7 +290,7 @@ def stream_or_shell_integrate(galaxy, m_sat, sat_host_dist, peri_arr, apo_arr, c
             total_profile = [host_profile, host_disk_profile]
             s = (m_sat[redshift_id] / (3 * (host_profile.M(sathd) + host_disk_profile.M(sathd)))) ** (1 / 3)
             M_Rp_arr.append(host_profile.M(sathd) + host_disk_profile.M(sathd))
-            
+
             # Convert pericenter coordinates to Cartesian and calculate energy and angular momentum
             coords_cart, vels_cart = helpers.rvcyltocart(coord_peri[ii], vel_peri[ii])
             E_new, L_new = helpers.EnergyAngMom(coords_cart, vels_cart, Phi(total_profile, sathd), m_sat[redshift_id])
@@ -380,7 +376,7 @@ def stream_or_shell_integrate(galaxy, m_sat, sat_host_dist, peri_arr, apo_arr, c
             else:
                 Psi_E = rosette_angle_arr_flip[i]
                 Psi_E_arr.append(rosette_angle_arr_flip[i])
-                
+
         predictions = np.divide(Psi_L_arr, Psi_E_arr)
 
         # Determine if the orbit is a stream or shell based on predictions

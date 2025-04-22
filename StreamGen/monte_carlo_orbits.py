@@ -1,14 +1,9 @@
 # Orbits simulation and Monte Carlo integration for satellite galaxies
-import sys, os
-satgen_path = os.path.abspath(os.path.join(__file__, "./../../../SatGen/"))
-sys.path.insert(0, satgen_path)
-from profiles import Dekel, MN, EnergyAngMomGivenRpRa, Phi
 import multiprocessing as mp
 from tqdm import tqdm
-import scipy
-import onesat_orbit
+from . import onesat_orbit
 import numpy as np
-import helpers
+from . import helpers
 
 # Function to perform Monte Carlo integration of orbits for a satellite galaxy
 def integrate_mc_orbits(galaxy, coordinate, sigma, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, num_mc, period_est_correction=0):
@@ -39,7 +34,7 @@ def integrate_mc_orbits(galaxy, coordinate, sigma, coord_at, host_coords, mass, 
     - total_profile (object): The host galaxy's potential profile.
     - pos_vel_list (list): List of satellite positions and velocities at each time step from the sampled orbits.
     - num_mc (int): Number of sampled orbits.
-    
+
     Notes:
     - The function uses parallel processing to integrate sampled satellite particles.
     """
@@ -59,10 +54,10 @@ def integrate_mc_orbits(galaxy, coordinate, sigma, coord_at, host_coords, mass, 
     # Set up multiprocessing pool for parallel Monte Carlo simulations
     pool = mp.Pool(mp.cpu_count() - 1)
     print("cpu count", mp.cpu_count())
-    
+
     # Perform Monte Carlo simulations using parallel processing
     results = [pool.apply_async(MC_orbits_SG, args=(galaxy, coordinate, sigma, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction)) for _ in tqdm(range(0, num_draw), position=0, leave=True)]
-    
+
     pool.close()
     res = [f.get() for f in tqdm(results)]
 
@@ -84,7 +79,7 @@ def integrate_mc_orbits(galaxy, coordinate, sigma, coord_at, host_coords, mass, 
 def MC_orbits_SG(galaxy, coordinate, sigma, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction):
     """
     Simulates a single Monte Carlo orbit for a satellite galaxy by drawing random velocities.
-    
+
     Parameters:
     - galaxy (object): The galaxy object, providing necessary properties.
     - coordinate (2D array): Array of satellite positions and velocities at each redshift step.
@@ -114,29 +109,29 @@ def MC_orbits_SG(galaxy, coordinate, sigma, coord_at, host_coords, mass, redshif
     """
     # Seed the random number generator for different Monte Carlo runs
     np.random.seed()
-    
+
     # Extract satellite coordinates and velocities at the current redshift
     coordinate = coordinate[redshift_id]
-    
+
     coord_init = coordinate[:3]
     vels_init = coordinate[3:]
 
     # Convert initial cylindrical coordinates to Cartesian coordinates
     coords_cart, vels_cart = helpers.rvcyltocart(coord_init, vels_init)
-    
+
     # Generate a random velocity draw from a multivariate normal distribution
     cov = np.array([[sigma**2, 0, 0], [0, sigma**2, 0], [0, 0, sigma**2]])
     random_vel_draw = np.random.multivariate_normal(vels_cart, cov, 1).flatten()
-    
+
     # Convert the drawn velocities back to cylindrical coordinates
     coords_cyl, coord_rand_vel_cyl = helpers.rvcarttocyl(coords_cart, random_vel_draw)
 
     # Integrate the satellite's orbit using the random velocity draw
     timetot, Nstep, tmax, pos_vel, min_loc, max_loc, satdist, t = onesat_orbit.integrate_orbit(galaxy, coord_at, host_coords, mass, redshift_id, time_btwn_apo, ecc_est, period_est_correction=period_est_correction,  random_draw=coord_rand_vel_cyl)
-    
+
     # Reintegrate pericenter and apocenter properties
     all_apo, all_peri, ca, cp, tba, vels_peri, vels_apo = helpers.peri_apo_props_reintegrate(timetot, Nstep, tmax, pos_vel, min_loc, max_loc, satdist, t)
-    
+
     # Get the total host profile at the current redshift
     total_profile = galaxy.get_host_profile(redshift_id)
 
